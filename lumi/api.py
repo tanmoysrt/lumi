@@ -117,6 +117,7 @@ class Lumi:
         try:
             request_body = json.loads(raw_body)
         except :
+            # If there is any error parsing the body of the request, return 400 Bad Request
             start_response("400 Bad Request", [('Content-Type', 'application/json')])
             return [b'{"exit_code": 1, "status_code": 400, "result": "", "error": "Failed to decode JSON"}']
 
