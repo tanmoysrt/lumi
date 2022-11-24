@@ -2,9 +2,9 @@
 
 <img align="right" src="https://raw.githubusercontent.com/Tanmoy741127/cdn/main/lumi/lumi-logo.png" height="100px"/>
 
-Lumi is an library to convert your python functions into a REST API without any extra headache.
+Lumi is an nano framework to convert your python functions into a REST API without any extra headache.
 
-* This library is created by taking the concept of **RPC** and blended with **REST Api** specs. 
+* This library is created by taking the concept of **RPC** and blended with **REST API** specs. 
 * We need to just register the function and it will be available as a REST API. 
 * Web-server written with **Gunicorn**
 * Local development server provided for rapid development and prototyping.
