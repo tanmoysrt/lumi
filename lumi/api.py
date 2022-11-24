@@ -113,7 +113,12 @@ class Lumi:
 
         # Body of the request
         raw_body = environ["wsgi.input"].read()
-        request_body = json.loads(raw_body)
+        request_body = None
+        try:
+            request_body = json.loads(raw_body)
+        except :
+            start_response("400 Bad Request", [('Content-Type', 'application/json')])
+            return [b'{"exit_code": 1, "status_code": 400, "result": "", "error": "Failed to decode JSON"}']
 
         # Get the function metadata
         function_metadata = self.function_routing_map[route]

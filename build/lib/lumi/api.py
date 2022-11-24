@@ -83,10 +83,10 @@ class Lumi:
         import json
         print(json.dumps(self.function_routing_map))
 
-    def runServer(self, host="127.0.0.1", port=8080):
+    def runServer(self, host="127.0.0.1", port=8080,workers:int=None):
         options = {
             'bind': '%s:%s' % (host, str(port)),
-            'workers': (multiprocessing.cpu_count() * 2) + 1,
+            'workers': workers if workers is not None and workers>2 else  (multiprocessing.cpu_count() * 2) + 1,
         }
         devServer = DevelopmentServer(self, options)
         devServer.run()
@@ -113,7 +113,12 @@ class Lumi:
 
         # Body of the request
         raw_body = environ["wsgi.input"].read()
-        request_body = json.loads(raw_body)
+        request_body = None
+        try:
+            request_body = json.loads(raw_body)
+        except :
+            start_response("400 Bad Request", [('Content-Type', 'application/json')])
+            return [b'{"exit_code": 1, "status_code": 400, "result": "", "error": "Failed to decode JSON"}']
 
         # Get the function metadata
         function_metadata = self.function_routing_map[route]
