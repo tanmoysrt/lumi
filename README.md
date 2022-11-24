@@ -119,6 +119,8 @@ app.register(add, route="/addition")
 ## Task Lists
 - [x] Base System
 - [x] Add support for default parameters that is provided in the function
+- [ ] Make available GET request for the function
+- [ ] Provide option to override POST with PUT if the user wants
 - [ ] Add authentication middleware support
 - [ ] Support nested routing of urls
 - [ ] For local development, create an file observer that can automatically reload the server when the file is changed.
