@@ -1,15 +1,13 @@
 from setuptools import find_packages, setup
 
-# with open("README.MD", "r", encoding="utf-8") as fh:
-#     long_description = fh.read()
-
-long_description = "Lumi is a Python library that allows you to create a REST API from your Python functions."
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 setup(
     name='lumi',
     packages=find_packages(),
-    version='1.0.3',
-    description='Convert your Python functions into REST API with single line of code',
+    version='1.0.4',
+    description='Convert your Python functions into REST API without any extra effort 🔥',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Tanmoy Sarkar',
