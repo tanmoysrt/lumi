@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: lumi
+Version: 1.0.3
+Summary: Convert your Python functions into REST API with single line of code
+Home-page: https://github.com/Tanmoy741127/lumi
+Author: Tanmoy Sarkar
+Author-email: ts741127@gmail.com
+License: MIT
+Description: Lumi is a Python library that allows you to create a REST API from your Python functions.
+Keywords: rpc rest api web backend framework
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
