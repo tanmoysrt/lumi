@@ -83,10 +83,10 @@ class Lumi:
         import json
         print(json.dumps(self.function_routing_map))
 
-    def runServer(self, host="127.0.0.1", port=8080):
+    def runServer(self, host="127.0.0.1", port=8080,workers:int=None):
         options = {
             'bind': '%s:%s' % (host, str(port)),
-            'workers': (multiprocessing.cpu_count() * 2) + 1,
+            'workers': workers if workers is not None and workers>2 else  (multiprocessing.cpu_count() * 2) + 1,
         }
         devServer = DevelopmentServer(self, options)
         devServer.run()
