@@ -121,6 +121,7 @@ app.register(add, route="/addition")
 - [x] Add support for default parameters that is provided in the function
 - [ ] Add authentication middleware support
 - [ ] Support nested routing of urls
+- [ ] For local development, create an file observer that can automatically reload the server when the file is changed.
 - [ ] Add support for object serialization and deserialization based on argument types of function
 
 ## Contributing
