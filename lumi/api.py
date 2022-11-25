@@ -111,7 +111,7 @@ class Lumi:
 
         route = environ["PATH_INFO"]
         # If route is not in the function_routing_map, return 404 Not Found
-        if route not in self.function_routing_map:
+        if route not in self.function_routing_map[method]:
             start_response("404 Not Found", [('Content-Type', 'application/json')])
             return [b'{"exit_code": 1, "status_code": 404, "result": "", "error": "Not Found"}']
 
