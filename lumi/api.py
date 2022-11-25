@@ -18,10 +18,11 @@ class Lumi:
         self.registered_functions = {}
         self.function_routing_map = {
             RequestMethod.POST : {},
-            RequestMethod.PUT : {}
+            RequestMethod.PUT : {},
+            RequestMethod.PATCH : {}
         }
         '''
-        This dictionary will store the route and the function metadata
+        This dictionary will store the route along with request type and the function metadata
         Function metadata will have functionKey .
         With the functionKey we can get the function from the registered_functions dictionary
         '''
@@ -98,7 +99,7 @@ class Lumi:
     def wsgi_app(self, environ:dict, start_response:typing.Callable):
         method = environ["REQUEST_METHOD"]
         # Block all the methods except POST
-        if method != RequestMethod.POST and method != RequestMethod.PUT:
+        if method != RequestMethod.POST and method != RequestMethod.PUT and method != RequestMethod.PATCH:
             start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
             return [b'{"exit_code": 1, "status_code": 405, "result": "", "error": "Method Not Allowed"}']
 
