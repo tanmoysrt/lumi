@@ -1,4 +1,7 @@
 import typing
+import pprint
+
+
 from nanoid import generate
 import json
 from lumi.server import DevelopmentServer
@@ -14,17 +17,19 @@ class Lumi:
         return Lumi.instance
 
     def __init__(self):
+        print("Lumi instance created")
         self.registered_functions = {}
         self.function_routing_map = {}
+        self.method= None
         '''
         This dictionary will store the route and the function metadata
         Function metadata will have functionKey .
         With the functionKey we can get the function from the registered_functions dictionary
         '''
 
-    def register(self, function, route:str=None)->None:
+    def register(self, function, route:str=None,method:str="POST")->None:
+
         functionKey = generate(size=10)
-        
         # Store the function in the registered_functions dictionary
         self.registered_functions[functionKey] = function
 
@@ -32,13 +37,14 @@ class Lumi:
         name = function.__code__.co_name
         module_name = function.__module__
         file_name = function.__code__.co_filename
-                
+
+
         # Generate function metadata and store it in the function_routing_map
         no_of_arguments = function.__code__.co_argcount
         function_parameters = list(function.__code__.co_varnames)[:no_of_arguments]
         default_parameters = function.__defaults__
         default_parameters = list(default_parameters) if default_parameters is not None else []
-        
+
         # Calculate no of parameters
         no_of_function_parameters = len(function_parameters)
         no_of_default_parameters = len(default_parameters)
@@ -70,6 +76,7 @@ class Lumi:
             "module_name": module_name,
             "file_name": file_name,
             "key": functionKey,
+            "requested_method":method,
             "parameters": {
                 "all": function_parameters,
                 "required": required_parameters,
@@ -77,13 +84,14 @@ class Lumi:
             },
             "default_values": default_parameters_map
         }
-    
+
     def print_registered_functions(self):
         # print(self.registered_functions)
         import json
         print(json.dumps(self.function_routing_map))
 
     def runServer(self, host="127.0.0.1", port=8080,workers:int=None):
+        print("Running server")
         options = {
             'bind': '%s:%s' % (host, str(port)),
             'workers': workers if workers is not None and workers>2 else  (multiprocessing.cpu_count() * 2) + 1,
@@ -92,9 +100,25 @@ class Lumi:
         devServer.run()
 
     def wsgi_app(self, environ:dict, start_response:typing.Callable):
-        method = environ["REQUEST_METHOD"]
+
+        # print for debugging purposes
+
+        # pprint.pprint(self.registered_functions)
+        # pprint.pprint(self.function_routing_map)
+        # pprint.pprint(environ)
+
+
+        user_method = self.method
+        request_method = environ["REQUEST_METHOD"]
+
+        if user_method is not None and user_method != request_method:
+            start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
+            return [json.dumps({"message":"Method Not Allowed"}).encode()]
+
+
+
         # Block all the methods except POST
-        if method != "POST":
+        if request_method != "POST":
             start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
             return [b'{"exit_code": 1, "status_code": 405, "result": "", "error": "Method Not Allowed"}']
 
