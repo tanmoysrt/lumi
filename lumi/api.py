@@ -137,6 +137,10 @@ class Lumi:
 
         # Body of the request
         raw_body = environ["wsgi.input"].read()
+        if raw_body is None or raw_body == b"":
+            # Maybe the request is not having any body, [Possible reason : Function needs no parameters]
+            # So, we will pass an empty dictionary
+            raw_body == b"{}"
         request_body = None
         try:
             request_body = json.loads(raw_body)
