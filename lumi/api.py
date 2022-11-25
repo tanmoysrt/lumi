@@ -98,7 +98,7 @@ class Lumi:
 
     def wsgi_app(self, environ:dict, start_response:typing.Callable):
         method = environ["REQUEST_METHOD"]
-        # Block all the methods except POST
+        # Block all the methods except POST, PUT and PATCH
         if method != RequestMethod.POST and method != RequestMethod.PUT and method != RequestMethod.PATCH:
             start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
             return [b'{"exit_code": 1, "status_code": 405, "result": "", "error": "Method Not Allowed"}']
