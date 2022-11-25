@@ -129,3 +129,7 @@ app.register(add, route="/addition")
 ## Contributing
 
 Contributions are always welcome!
+## Our community
+
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
