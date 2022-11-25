@@ -2,6 +2,7 @@ import typing
 from nanoid import generate
 import json
 from lumi.server import DevelopmentServer
+from lumi.enums import RequestMethod
 import multiprocessing
 
 class Lumi:
@@ -15,14 +16,17 @@ class Lumi:
 
     def __init__(self):
         self.registered_functions = {}
-        self.function_routing_map = {}
+        self.function_routing_map = {
+            RequestMethod.POST : {},
+            RequestMethod.PUT : {}
+        }
         '''
         This dictionary will store the route and the function metadata
         Function metadata will have functionKey .
         With the functionKey we can get the function from the registered_functions dictionary
         '''
 
-    def register(self, function, route:str=None)->None:
+    def register(self, function, route:str=None, request_method=RequestMethod.POST)->None:
         functionKey = generate(size=10)
         
         # Store the function in the registered_functions dictionary
@@ -65,7 +69,7 @@ class Lumi:
             function_routing_map_key = function_routing_map_key[:-1]
 
 
-        self.function_routing_map[function_routing_map_key] = {
+        self.function_routing_map[request_method][function_routing_map_key] = {
             "name": name,
             "module_name": module_name,
             "file_name": file_name,
@@ -94,7 +98,7 @@ class Lumi:
     def wsgi_app(self, environ:dict, start_response:typing.Callable):
         method = environ["REQUEST_METHOD"]
         # Block all the methods except POST
-        if method != "POST":
+        if method != RequestMethod.POST and method != RequestMethod.PUT:
             start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
             return [b'{"exit_code": 1, "status_code": 405, "result": "", "error": "Method Not Allowed"}']
 
@@ -126,7 +130,7 @@ class Lumi:
             return [b'{"exit_code": 1, "status_code": 400, "result": "", "error": "Failed to decode JSON"}']
 
         # Get the function metadata
-        function_metadata = self.function_routing_map[route]
+        function_metadata = self.function_routing_map[method][route]
         function_object = self.registered_functions[function_metadata["key"]]
 
         # Serialize the arguments
