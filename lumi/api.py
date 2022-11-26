@@ -1,10 +1,8 @@
 import typing
-import pprint
-
-
 from nanoid import generate
 import json
 from lumi.server import DevelopmentServer
+from lumi.enums import RequestMethod
 import multiprocessing
 
 class Lumi:
@@ -17,19 +15,21 @@ class Lumi:
         return Lumi.instance
 
     def __init__(self):
-        print("Lumi instance created")
         self.registered_functions = {}
-        self.function_routing_map = {}
-        self.method= None
+        self.function_routing_map = {
+            RequestMethod.POST : {},
+            RequestMethod.PUT : {},
+            RequestMethod.PATCH : {}
+        }
         '''
-        This dictionary will store the route and the function metadata
+        This dictionary will store the route along with request type and the function metadata
         Function metadata will have functionKey .
         With the functionKey we can get the function from the registered_functions dictionary
         '''
 
-    def register(self, function, route:str=None,method:str="POST")->None:
-
+    def register(self, function, route:str=None, request_method=RequestMethod.POST)->None:
         functionKey = generate(size=10)
+        
         # Store the function in the registered_functions dictionary
         self.registered_functions[functionKey] = function
 
@@ -37,14 +37,13 @@ class Lumi:
         name = function.__code__.co_name
         module_name = function.__module__
         file_name = function.__code__.co_filename
-
-
+                
         # Generate function metadata and store it in the function_routing_map
         no_of_arguments = function.__code__.co_argcount
         function_parameters = list(function.__code__.co_varnames)[:no_of_arguments]
         default_parameters = function.__defaults__
         default_parameters = list(default_parameters) if default_parameters is not None else []
-
+        
         # Calculate no of parameters
         no_of_function_parameters = len(function_parameters)
         no_of_default_parameters = len(default_parameters)
@@ -71,12 +70,11 @@ class Lumi:
             function_routing_map_key = function_routing_map_key[:-1]
 
 
-        self.function_routing_map[function_routing_map_key] = {
+        self.function_routing_map[request_method][function_routing_map_key] = {
             "name": name,
             "module_name": module_name,
             "file_name": file_name,
             "key": functionKey,
-            "requested_method":method,
             "parameters": {
                 "all": function_parameters,
                 "required": required_parameters,
@@ -84,14 +82,13 @@ class Lumi:
             },
             "default_values": default_parameters_map
         }
-
+    
     def print_registered_functions(self):
         # print(self.registered_functions)
         import json
         print(json.dumps(self.function_routing_map))
 
     def runServer(self, host="127.0.0.1", port=8080,workers:int=None):
-        print("Running server")
         options = {
             'bind': '%s:%s' % (host, str(port)),
             'workers': workers if workers is not None and workers>2 else  (multiprocessing.cpu_count() * 2) + 1,
@@ -100,25 +97,9 @@ class Lumi:
         devServer.run()
 
     def wsgi_app(self, environ:dict, start_response:typing.Callable):
-
-        # print for debugging purposes
-
-        # pprint.pprint(self.registered_functions)
-        # pprint.pprint(self.function_routing_map)
-        # pprint.pprint(environ)
-
-
-        user_method = self.method
-        request_method = environ["REQUEST_METHOD"]
-
-        if user_method is not None and user_method != request_method:
-            start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
-            return [json.dumps({"message":"Method Not Allowed"}).encode()]
-
-
-
-        # Block all the methods except POST
-        if request_method != "POST":
+        method = environ["REQUEST_METHOD"]
+        # Block all the methods except POST, PUT and PATCH
+        if method != RequestMethod.POST and method != RequestMethod.PUT and method != RequestMethod.PATCH:
             start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
             return [b'{"exit_code": 1, "status_code": 405, "result": "", "error": "Method Not Allowed"}']
 
@@ -131,7 +112,7 @@ class Lumi:
 
         route = environ["PATH_INFO"]
         # If route is not in the function_routing_map, return 404 Not Found
-        if route not in self.function_routing_map:
+        if route not in self.function_routing_map[method]:
             start_response("404 Not Found", [('Content-Type', 'application/json')])
             return [b'{"exit_code": 1, "status_code": 404, "result": "", "error": "Not Found"}']
 
@@ -150,7 +131,7 @@ class Lumi:
             return [b'{"exit_code": 1, "status_code": 400, "result": "", "error": "Failed to decode JSON"}']
 
         # Get the function metadata
-        function_metadata = self.function_routing_map[route]
+        function_metadata = self.function_routing_map[method][route]
         function_object = self.registered_functions[function_metadata["key"]]
 
         # Serialize the arguments

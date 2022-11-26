@@ -2,6 +2,7 @@ README.md
 setup.py
 lumi/__init__.py
 lumi/api.py
+lumi/enums.py
 lumi/server.py
 lumi.egg-info/PKG-INFO
 lumi.egg-info/SOURCES.txt

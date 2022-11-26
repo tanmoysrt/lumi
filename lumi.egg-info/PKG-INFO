@@ -1,12 +1,12 @@
 Metadata-Version: 2.1
 Name: lumi
-Version: 1.0.6
+Version: 1.0.7
 Summary: Convert your Python functions into REST API without any extra effort 🔥
 Home-page: https://github.com/Tanmoy741127/lumi
 Author: Tanmoy Sarkar
 Author-email: ts741127@gmail.com
 License: MIT
-Description: # Lumi 💧
+Description: # Lumi 💧 <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FTanmoy741127%2Flumi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
         
         <img align="right" src="https://raw.githubusercontent.com/Tanmoy741127/cdn/main/lumi/lumi-logo.png" height="100px"/>
         
@@ -98,11 +98,28 @@ Description: # Lumi 💧
         }
         ```
         
-        
+        ## Custom Routing
         Now you may think, the function name will be always same as the route. But, you can change the route by passing the route parameter.
         
         ```python
         app.register(add, route="/addition")
+        ```
+        ## Custom Request Method
+        By default, the request method is `POST`. But, you can change it by passing the method parameter. Currenetly , it supports `POST`, `PUT` and `PATCH` methods.
+        
+        ```python
+        from lumi import Lumi, RequestMethod
+        
+        app = Lumi()
+        
+        def add(a, b):
+            return a+b
+        
+        
+        app.register(add, request_method=RequestMethod.PUT) # Register function for PUT method
+        app.register(add, request_method=RequestMethod.PATCH) # Register function for PATCH method
+        
+        app.runServer()
         ```
         
         ## Status Codes
@@ -128,7 +145,7 @@ Description: # Lumi 💧
         - [x] Base System
         - [x] Add support for default parameters that is provided in the function
         - [ ] Make available GET request for the function
-        - [ ] Provide option to override POST with PUT if the user wants
+        - [x] Provide option to override POST with PUT if the user wants
         - [ ] Add authentication middleware support
         - [ ] Support nested routing of urls
         - [ ] For local development, create an file observer that can automatically reload the server when the file is changed.

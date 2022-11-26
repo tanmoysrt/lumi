@@ -90,11 +90,28 @@ Output
 }
 ```
 
-
+## Custom Routing
 Now you may think, the function name will be always same as the route. But, you can change the route by passing the route parameter.
 
 ```python
 app.register(add, route="/addition")
+```
+## Custom Request Method
+By default, the request method is `POST`. But, you can change it by passing the method parameter. Currenetly , it supports `POST`, `PUT` and `PATCH` methods.
+
+```python
+from lumi import Lumi, RequestMethod
+
+app = Lumi()
+
+def add(a, b):
+    return a+b
+
+
+app.register(add, request_method=RequestMethod.PUT) # Register function for PUT method
+app.register(add, request_method=RequestMethod.PATCH) # Register function for PATCH method
+
+app.runServer()
 ```
 
 ## Status Codes
@@ -120,7 +137,9 @@ app.register(add, route="/addition")
 - [x] Base System
 - [x] Add support for default parameters that is provided in the function
 - [ ] Make available GET request for the function
-- [ ] Provide option to override POST with PUT if the user wants
+- [x] Provide option to override POST with PUT if the user wants
+- [ ] Add support to send file directly to user
+- [ ] Add support to serve files through a public folder [Customizable]
 - [ ] Add authentication middleware support
 - [ ] Support nested routing of urls
 - [ ] For local development, create an file observer that can automatically reload the server when the file is changed.
