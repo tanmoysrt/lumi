@@ -16,16 +16,26 @@ class Lumi:
 
     def __init__(self):
         self.registered_functions = {}
+        '''
+        This dictionary will store the route along with request type and the function metadata
+        Function metadata will have functionKey .
+        With the functionKey we can get the function from the registered_functions dictionary
+        '''
         self.function_routing_map = {
             RequestMethod.POST : {},
             RequestMethod.PUT : {},
             RequestMethod.PATCH : {}
         }
         '''
-        This dictionary will store the route along with request type and the function metadata
-        Function metadata will have functionKey .
-        With the functionKey we can get the function from the registered_functions dictionary
+        Here we will store the registered middlewares
+
         '''
+        self.registered_middlewares = []
+
+
+    def use(self, middleware):
+        self.registered_middlewares.append(middleware)
+
 
     def register(self, function, route:str=None, request_method=RequestMethod.POST)->None:
         functionKey = generate(size=10)
