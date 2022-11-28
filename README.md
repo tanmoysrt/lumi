@@ -2,7 +2,7 @@
 
 <img align="right" src="https://raw.githubusercontent.com/Tanmoy741127/cdn/main/lumi/lumi-logo.png" height="100px"/>
 
-Lumi is an nano framework to convert your python functions into a REST API without any extra headache.
+Lumi is a nano framework to convert your python functions into a REST API without any extra headache.
 
 * This library is created by taking the concept of **RPC** and blended with **REST API** specs. 
 * We need to just register the function and it will be available as a REST API. 
@@ -16,7 +16,7 @@ pip install lumi
 ```
 
 ## Function <--> API mapping
-![function - API maaping](https://raw.githubusercontent.com/Tanmoy741127/cdn/main/lumi/function-api-map.png)
+![function - API mapping](https://raw.githubusercontent.com/Tanmoy741127/cdn/main/lumi/function-api-map.png)
 
 
 ## How to use 🤔
@@ -27,7 +27,7 @@ Let's create a simple function to add two numbers.
 def add(a, b):
     return a + b
 
-def substract(a, b):
+def subtract(a, b):
     return a - b
 ```
 
@@ -41,7 +41,7 @@ from lumi import Lumi
 app = Lumi()
 
 app.register(add) # Registering the function
-app.register(substract)
+app.register(subtract)
 
 app.runServer(host="127.0.0.1", port=8080)
 ```
@@ -97,7 +97,7 @@ Now you may think, the function name will be always same as the route. But, you 
 app.register(add, route="/addition")
 ```
 ## Custom Request Method
-By default, the request method is `POST`. But, you can change it by passing the method parameter. Currenetly , it supports `POST`, `PUT` and `PATCH` methods.
+By default, the request method is `POST`. But, you can change it by passing the method parameter. Currently, it supports `POST`, `PUT` and `PATCH` methods.
 
 ```python
 from lumi import Lumi, RequestMethod
