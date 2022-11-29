@@ -166,6 +166,13 @@ Contributions are always welcome!
             <br />
             <sub><b>Amir M. Ghanem</b></sub>
         </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/0xflotus">
+            <img src="https://avatars.githubusercontent.com/u/26602940?v=4" width="100;" alt="0xflotus"/>
+            <br />
+            <sub><b>0xflotus</b></sub>
+        </a>
     </td></tr>
 </table>
 <!-- readme: contributors -end -->
