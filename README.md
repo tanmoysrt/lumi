@@ -140,7 +140,7 @@ app.runServer()
 - [x] Provide option to override POST with PUT if the user wants
 - [ ] Add support to send file directly to user
 - [ ] Add support to serve files through a public folder [Customizable]
-- [ ] Add authentication middleware support
+- [ ] Add suport for middleware integration
 - [ ] Support nested routing of urls
 - [ ] For local development, create an file observer that can automatically reload the server when the file is changed.
 - [ ] Add support for object serialization and deserialization based on argument types of function
