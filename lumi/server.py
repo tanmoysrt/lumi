@@ -1,8 +1,8 @@
 import gunicorn.app.base
 
 '''
-Development sever for RPC
-In production, use gunicorn daemon to manage the server
+Development server for RPC
+In production, use gunicorn daemon to manage the server.
 '''
 class DevelopmentServer(gunicorn.app.base.BaseApplication):
     def __init__(self, app, options=None):
