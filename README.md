@@ -168,6 +168,13 @@ Contributions are always welcome!
         </a>
     </td>
     <td align="center">
+        <a href="https://github.com/matheusfelipeog">
+            <img src="https://avatars.githubusercontent.com/u/50463866?v=4" width="100;" alt="matheusfelipeog"/>
+            <br />
+            <sub><b>Matheus Felipe</b></sub>
+        </a>
+    </td>
+    <td align="center">
         <a href="https://github.com/0xflotus">
             <img src="https://avatars.githubusercontent.com/u/26602940?v=4" width="100;" alt="0xflotus"/>
             <br />
