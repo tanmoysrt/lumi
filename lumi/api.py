@@ -190,6 +190,6 @@ class Lumi:
         status_text = "200 OK" if status_code == 200 else "500 Internal Server Error"
         start_response(status_text, [('Content-Type', 'application/json')])
         return iter([json.dumps(response).encode()])
-
+    
     def __call__(self, environ:dict, start_response: typing.Callable) -> typing.Any:
         return self.wsgi_app(environ, start_response)
