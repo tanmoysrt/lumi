@@ -1,7 +1,7 @@
 from waitress import serve
 
 '''
-Development server for RPC
+Development server for RPC . Used waitress WSGI server.
 In production, use gunicorn daemon to manage the server.
 '''
 class DevelopmentServer:

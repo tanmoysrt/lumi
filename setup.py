@@ -24,8 +24,8 @@ setup(
     keywords='rpc rest api web backend framework',
     python_requires='>=3.6',
     install_requires=[
-        "gunicorn==20.1.0",
-        "nanoid==2.0.0"
+        "nanoid==2.0.0",
+        "waitress==2.1.2"
     ],
 
 )
