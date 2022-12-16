@@ -1,10 +1,10 @@
-import gunicorn.app.base
+from waitress import serve
 
 '''
 Development server for RPC
 In production, use gunicorn daemon to manage the server.
 '''
-class DevelopmentServer(gunicorn.app.base.BaseApplication):
+class DevelopmentServer:
     def __init__(self, app, options=None):
         self.options = options or {}
         self.application = app
@@ -16,5 +16,6 @@ class DevelopmentServer(gunicorn.app.base.BaseApplication):
         for key, value in config.items():
             self.cfg.set(key.lower(), value)
 
-    def load(self):
-        return self.application
+    def run(self):
+        print("🚀 Running development server at http://%s" % self.options["listen"])
+        return serve(self.application, listen=self.options["listen"], threads=self.options["threads"])
