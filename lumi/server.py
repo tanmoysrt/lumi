@@ -17,5 +17,9 @@ class DevelopmentServer:
             self.cfg.set(key.lower(), value)
 
     def run(self):
-        print("🚀 Running development server at http://%s" % self.options["listen"])
-        return serve(self.application, listen=self.options["listen"], threads=self.options["threads"])
+        try:
+            print("🚀 Running development server at http://%s" % self.options["listen"])
+            return serve(self.application, listen=self.options["listen"], threads=self.options["threads"])
+        except KeyboardInterrupt:
+            print("Shutting down server.")
+

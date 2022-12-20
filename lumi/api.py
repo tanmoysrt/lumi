@@ -14,7 +14,7 @@ class Lumi:
             Lumi.instance = Lumi()
         return Lumi.instance
 
-    def __init__(self):
+    def __init__(self, debug=True):
         self.registered_functions = {}
         self.function_routing_map = {
             RequestMethod.POST : {},
@@ -26,6 +26,8 @@ class Lumi:
         Function metadata will have functionKey .
         With the functionKey we can get the function from the registered_functions dictionary
         '''
+
+        self.debug = debug # Make it false, if you are in production
 
     def register(self, function, route:str=None, request_method=RequestMethod.POST)->None:
         functionKey = generate(size=10)
@@ -97,23 +99,31 @@ class Lumi:
         devServer.run()
 
     def wsgi_app(self, environ:dict, start_response:typing.Callable):
-        method = environ["REQUEST_METHOD"]
+        method = environ.get("REQUEST_METHOD","")
+        content_type = environ.get("CONTENT_TYPE", "")
+        route = environ.get("PATH_INFO", "")
+
         # Block all the methods except POST, PUT and PATCH
         if method != RequestMethod.POST and method != RequestMethod.PUT and method != RequestMethod.PATCH:
             start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
+            if self.debug:
+                print("[%s] [%s] %s" % (method, 405, route))
             return [b'{"exit_code": 1, "status_code": 405, "result": "", "error": "Method Not Allowed"}']
 
         # Check content type
         # If other than application/json, return 415 Unsupported Media Type
-        content_type = environ["CONTENT_TYPE"]
         if content_type != "application/json":
             start_response("415 Unsupported Media Type", [('Content-Type', 'application/json')])
+            if self.debug:
+                print("[%s] [%s] %s" % (method, 425, route))
             return [b'{"exit_code": 1, "status_code": 415, "result": "", "error": "Unsupported Media Type"}']
 
-        route = environ["PATH_INFO"]
+        
         # If route is not in the function_routing_map, return 404 Not Found
         if route not in self.function_routing_map[method]:
             start_response("404 Not Found", [('Content-Type', 'application/json')])
+            if self.debug:
+                print("[%s] [%s] %s" % (method, 404, route))
             return [b'{"exit_code": 1, "status_code": 404, "result": "", "error": "Not Found"}']
 
         # Body of the request
@@ -128,6 +138,8 @@ class Lumi:
         except :
             # If there is any error parsing the body of the request, return 400 Bad Request
             start_response("400 Bad Request", [('Content-Type', 'application/json')])
+            if self.debug:
+                print("[%s] [%s] %s" % (method, 400, route))
             return [b'{"exit_code": 1, "status_code": 400, "result": "", "error": "Failed to decode JSON"}']
 
         # Get the function metadata
@@ -144,6 +156,8 @@ class Lumi:
             else:
                 # If any of the required parameters are not present, return 400 Bad Request
                 start_response("400 Bad Request", [('Content-Type', 'application/json')])
+                if self.debug:
+                    print("[%s] [%s] %s" % (method, 400, route))
                 return [b"400 Bad Request"]
 
         # Check if any of the optional parameters are present in the request body
@@ -179,6 +193,8 @@ class Lumi:
 
         status_text = "200 OK" if status_code == 200 else "500 Internal Server Error"
         start_response(status_text, [('Content-Type', 'application/json')])
+        if self.debug:
+            print("[%s] [%s] %s" % (method, 200, route))
         return iter([json.dumps(response).encode()])
 
     def __call__(self, environ:dict, start_response: typing.Callable) -> typing.Any:
