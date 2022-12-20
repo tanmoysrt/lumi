@@ -114,6 +114,18 @@ app.register(add, request_method=RequestMethod.PATCH) # Register function for PA
 app.runServer()
 ```
 
+## Debug Mode
+By default, the debug mode is `True`. But, you can change it by passing the debug parameter.
+
+```python
+# app.py
+
+from lumi import Lumi
+
+app = Lumi(debug=False)
+...
+```
+
 ## Status Codes
 
 | Status Code | Description |
@@ -136,6 +148,7 @@ app.runServer()
 ## Task Lists
 - [x] Base System
 - [x] Add support for default parameters that is provided in the function
+- [x] Debug mode  and logging support
 - [ ] Make available GET request for the function
 - [x] Provide option to override POST with PUT if the user wants
 - [ ] Add support to send file directly to user
