@@ -3,7 +3,6 @@ from nanoid import generate
 import json
 from lumi.server import DevelopmentServer
 from lumi.enums import RequestMethod
-import multiprocessing
 
 class Lumi:
     instance = None
