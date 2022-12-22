@@ -97,7 +97,7 @@ Now you may think, the function name will be always same as the route. But, you 
 app.register(add, route="/addition")
 ```
 ## Custom Request Method
-By default, the request method is `POST`. But, you can change it by passing the method parameter. Currently, it supports `POST`, `PUT` and `PATCH` methods.
+By default, the request method is `POST`. But, you can change it by passing the method parameter. Currently, it supports `GET`, `POST`, `PUT` and `PATCH` methods.
 
 ```python
 from lumi import Lumi, RequestMethod
@@ -107,11 +107,36 @@ app = Lumi()
 def add(a, b):
     return a+b
 
-
-app.register(add, request_method=RequestMethod.PUT) # Register function for PUT method
-app.register(add, request_method=RequestMethod.PATCH) # Register function for PATCH method
+# Default : Register function for POST method
+app.register(add)
+# Register function for GET method
+app.register(add, request_method=RequestMethod.GET)
+# Register function for POST method
+app.register(add, request_method=RequestMethod.POST)
+# Register function for PUT method
+app.register(add, request_method=RequestMethod.PUT)
+# Register function for PATCH method
+app.register(add, request_method=RequestMethod.PATCH)
 
 app.runServer()
+```
+
+🟡 **Pay attention before using GET request :**  If you are using `GET` method
+- You need to pass the parameters in the query string, as `GET` dont support request body.
+- All those arguments, that will be passed to function will be in **String** format. So take care to convert them to the desired type in your function.
+
+
+## Send File
+Send file to user by returning the file object.
+
+```python
+from lumi import Lumi, RequestMethod
+app = Lumi()
+
+def download_file():
+    return open("file.txt", "rb") # Return file object
+
+app.register(download_file) 
 ```
 
 ## Debug Mode
@@ -149,9 +174,9 @@ app = Lumi(debug=False)
 - [x] Base System
 - [x] Add support for default parameters that is provided in the function
 - [x] Debug mode  and logging support
-- [ ] Make available GET request for the function
+- [x] Make available GET request for the function
 - [x] Provide option to override POST with PUT if the user wants
-- [ ] Add support to send file directly to user
+- [x] Add support to send file directly to user
 - [ ] Add support to serve files through a public folder [Customizable]
 - [ ] Add suport for middleware integration
 - [ ] Support nested routing of urls
