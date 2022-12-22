@@ -1,8 +1,12 @@
 import typing
 from nanoid import generate
 import json
+import io
+import os
+
 from lumi.server import DevelopmentServer
 from lumi.enums import RequestMethod
+from lumi.helpers import parseQueryParameter
 
 class Lumi:
     instance = None
@@ -16,6 +20,7 @@ class Lumi:
     def __init__(self, debug=True):
         self.registered_functions = {}
         self.function_routing_map = {
+            RequestMethod.GET: {},
             RequestMethod.POST : {},
             RequestMethod.PUT : {},
             RequestMethod.PATCH : {}
@@ -84,41 +89,28 @@ class Lumi:
             "default_values": default_parameters_map
         }
     
-    def print_registered_functions(self):
-        # print(self.registered_functions)
-        import json
-        print(json.dumps(self.function_routing_map))
-
-    def runServer(self, host="127.0.0.1", port=8080, threads:int=4):
-        options = {
-            'listen': '%s:%s' % (host, str(port)),
-            'threads': threads,
-        }
-        devServer = DevelopmentServer(self, options)
-        devServer.run()
-
     def wsgi_app(self, environ:dict, start_response:typing.Callable):
         method = environ.get("REQUEST_METHOD","")
         content_type = environ.get("CONTENT_TYPE", "")
         route = environ.get("PATH_INFO", "")
 
-        # Block all the methods except POST, PUT and PATCH
-        if method != RequestMethod.POST and method != RequestMethod.PUT and method != RequestMethod.PATCH:
+        ## Block all the methods except GET, POST, PUT and PATCH
+        if method != RequestMethod.GET and method != RequestMethod.POST and method != RequestMethod.PUT and method != RequestMethod.PATCH:
             start_response("405 Method Not Allowed", [('Content-Type', 'application/json')])
             if self.debug:
                 print("[%s] [%s] %s" % (method, 405, route))
             return [b'{"exit_code": 1, "status_code": 405, "result": "", "error": "Method Not Allowed"}']
 
-        # Check content type
+        ## Check content type
         # If other than application/json, return 415 Unsupported Media Type
-        if content_type != "application/json":
+        if content_type != "application/json" and method in [RequestMethod.POST, RequestMethod.PATCH, RequestMethod.PUT]:
             start_response("415 Unsupported Media Type", [('Content-Type', 'application/json')])
             if self.debug:
                 print("[%s] [%s] %s" % (method, 425, route))
             return [b'{"exit_code": 1, "status_code": 415, "result": "", "error": "Unsupported Media Type"}']
 
         
-        # If route is not in the function_routing_map, return 404 Not Found
+        ## If route is not in the function_routing_map, return 404 Not Found
         if route not in self.function_routing_map[method]:
             start_response("404 Not Found", [('Content-Type', 'application/json')])
             if self.debug:
@@ -127,10 +119,12 @@ class Lumi:
 
         # Body of the request
         raw_body = environ["wsgi.input"].read()
-        if raw_body is None or raw_body == b"":
+        if raw_body is None or raw_body == b"" or raw_body == "":
             # Maybe the request is not having any body, [Possible reason : Function needs no parameters]
             # So, we will pass an empty dictionary
-            raw_body == b"{}"
+            raw_body = "{}"
+
+        ## Parse body of POST, PUT, PATCH
         request_body = None
         try:
             request_body = json.loads(raw_body)
@@ -141,11 +135,15 @@ class Lumi:
                 print("[%s] [%s] %s" % (method, 400, route))
             return [b'{"exit_code": 1, "status_code": 400, "result": "", "error": "Failed to decode JSON"}']
 
+        ## Parse data from query parameters in case of GET request
+        if method == RequestMethod.GET:
+            request_body = parseQueryParameter(environ["QUERY_STRING"])
+
         # Get the function metadata
         function_metadata = self.function_routing_map[method][route]
         function_object = self.registered_functions[function_metadata["key"]]
 
-        # Serialize the arguments
+        ## Serialize the arguments
         arguments = []
         # Check if all the required parameters are present in the request body
         for parameter in function_metadata["parameters"]["required"]:
@@ -173,28 +171,64 @@ class Lumi:
         error = None
         status_code = 200
         exit_code = 0
+        isFile = False
 
         try:
             result = function_object(*arguments)
+            isFile = isinstance(result, io.IOBase)
             status_code = 200
             exit_code = 0
+        except FileNotFoundError as e:
+            error = str(e.strerror)
+            status_code = 404
+            exit_code = 1
         except Exception as e:
             error = str(e)
             status_code = 500
             exit_code = 1
 
-        response = {
-            "exit_code": exit_code,
-            "status_code": status_code,
-            "result": result if result is not None else "",
-            "error": error if error is not None else ""
-        }
+        ## Serve Requests
+        if isFile:
+            # Send the file
+            filename_with_path = result.name or 'unnamed'
+            # Check if the result is instance of TextIOWrapper
+            isTextIOWrapped = isinstance(result, io.TextIOWrapper)
+            if isTextIOWrapped:
+                result = io.open(filename_with_path, mode='rb')
 
-        status_text = "200 OK" if status_code == 200 else "500 Internal Server Error"
-        start_response(status_text, [('Content-Type', 'application/json')])
-        if self.debug:
-            print("[%s] [%s] %s" % (method, 200, route))
-        return iter([json.dumps(response).encode()])
+            start_response("200 OK", [('Content-Disposition', f'attachment; filename={os.path.basename(filename_with_path)}')])
+            if self.debug:
+                print("[%s] [%s] %s" % (method, "200", route))
+            if 'wsgi.file_wrapper' in environ:
+                return environ['wsgi.file_wrapper'](result, os.path.getsize(filename_with_path))
+            else:
+                return iter(lambda: result.read(os.path.getsize(filename_with_path)), '')
+        else:
+            # All responses except file
+            response = {
+                "exit_code": exit_code,
+                "status_code": status_code,
+                "result": result if result is not None else "",
+                "error": error if error is not None else ""
+            }
+
+            status_text = "200 OK" if status_code == 200 else f"{str(status_code)} Internal Server Error"
+            start_response(status_text, [('Content-Type', 'application/json')])
+            if self.debug:
+                print("[%s] [%s] %s" % (method, status_code, route))
+            return iter([json.dumps(response).encode()])
+
+    def print_registered_functions(self):
+        import json
+        print(json.dumps(self.function_routing_map))
+
+    def runServer(self, host="127.0.0.1", port=8080, threads:int=4):
+        options = {
+            'listen': '%s:%s' % (host, str(port)),
+            'threads': threads,
+        }
+        devServer = DevelopmentServer(self, options)
+        devServer.run()
 
     def __call__(self, environ:dict, start_response: typing.Callable) -> typing.Any:
         return self.wsgi_app(environ, start_response)
